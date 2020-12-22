@@ -113,6 +113,57 @@ describe('react-keybind', () => {
         expect(stub.preventDefault).toHaveBeenCalledTimes(0)
       })
 
+      it('executes shortcut repeatedly if key is in optional allowRepeatedKeys array', () => {
+        wrapper = mount(
+          <ShortcutProvider allowRepeatedKeys={['x']}>
+            <article />
+          </ShortcutProvider>,
+        )
+        instance = wrapper.instance() as ShortcutProvider
+        instance.registerShortcut(method, ['x'], 'Test Title', 'Some description')
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+
+        expect(method).toHaveBeenCalledTimes(5)
+      })
+
+      it('prevents repeated shortcut execution if key is not in optional allowRepeatedKeys array', () => {
+        wrapper = mount(
+          <ShortcutProvider allowRepeatedKeys={['a']}>
+            <article />
+          </ShortcutProvider>,
+        )
+        instance = wrapper.instance() as ShortcutProvider
+        instance.registerShortcut(method, ['x'], 'Test Title', 'Some description')
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+
+        expect(method).toHaveBeenCalledTimes(1)
+      })
+
+      it('prevents repeated shortcut execution if optional allowRepeatedKeys array is not provided', () => {
+        wrapper = mount(
+          <ShortcutProvider>
+            <article />
+          </ShortcutProvider>,
+        )
+        instance = wrapper.instance() as ShortcutProvider
+        instance.registerShortcut(method, ['x'], 'Test Title', 'Some description')
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+        simulateKeyDown({ key: 'x' })
+
+        expect(method).toHaveBeenCalledTimes(1)
+      })
+
       it('does not execute callback for unregistered keypresses', () => {
         instance.registerShortcut(method, ['x'], 'Test Title', 'Some description')
         simulateKeyDown({ key: 'a' })

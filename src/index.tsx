@@ -37,6 +37,7 @@ export interface IShortcutProviderProps {
   ignoreKeys?: string[]
   ignoreTagNames?: string[]
   preventDefault?: boolean
+  allowRepeatedKeys?: string[]
 }
 
 /**
@@ -180,7 +181,12 @@ export class ShortcutProvider extends React.PureComponent<IShortcutProviderProps
    * Handle "keydown" events and run the appropriate registered method
    */
   keyDown = e => {
-    const { ignoreKeys = [], ignoreTagNames, preventDefault = true } = this.props
+    const {
+      ignoreKeys = [],
+      ignoreTagNames,
+      preventDefault = true,
+      allowRepeatedKeys = [],
+    } = this.props
     const target = e.target as HTMLElement
     // ignore listening when certain elements are focused
     const ignore = ignoreTagNames
@@ -190,23 +196,31 @@ export class ShortcutProvider extends React.PureComponent<IShortcutProviderProps
     const key: string = e.key?.toLowerCase()
 
     // ensure that we're not focused on an element such as an <input />
-    if (key && ignore.indexOf(target.tagName.toLowerCase()) < 0 && this.keysDown.indexOf(key) < 0) {
+    if (key && ignore.indexOf(target.tagName.toLowerCase()) < 0) {
       const keysDown: string[] = []
-      if (e.ctrlKey === true && ignoreKeys.indexOf('ctrl') < 0) {
-        keysDown.push('ctrl')
-      }
-      if (e.altKey === true && ignoreKeys.indexOf('alt') < 0) {
-        keysDown.push('alt')
-      }
-      if (e.metaKey === true && ignoreKeys.indexOf('meta') < 0 && ignoreKeys.indexOf('cmd') < 0) {
-        keysDown.push('meta')
-      }
-      if (e.shiftKey === true && ignoreKeys.indexOf('shift') < 0) {
-        keysDown.push('shift')
+      if (this.keysDown.indexOf(key) < 0 || allowRepeatedKeys.indexOf(key) >= 0) {
+        if (e.ctrlKey === true && ignoreKeys.indexOf('ctrl') < 0) {
+          keysDown.push('ctrl')
+        }
+        if (e.altKey === true && ignoreKeys.indexOf('alt') < 0) {
+          keysDown.push('alt')
+        }
+        if (e.metaKey === true && ignoreKeys.indexOf('meta') < 0 && ignoreKeys.indexOf('cmd') < 0) {
+          keysDown.push('meta')
+        }
+        if (e.shiftKey === true && ignoreKeys.indexOf('shift') < 0) {
+          keysDown.push('shift')
+        }
+
+        if (ignoreKeys.indexOf(key) < 0) {
+          keysDown.push(key)
+        }
       }
 
-      if (ignoreKeys.indexOf(key) < 0) {
-        keysDown.push(key)
+      if (keysDown.length === 0) {
+        // We can safely assume the key was repeatead (and not allowed) at this point,
+        // and no further processing is required
+        return
       }
 
       const keyPress = keysDown.join('+')
@@ -218,7 +232,10 @@ export class ShortcutProvider extends React.PureComponent<IShortcutProviderProps
         this.listeners[keyPress].forEach(method => method(e))
       }
 
-      this.keysDown = [...this.keysDown, ...keysDown]
+      // Don't duplicate pressed key if it's being held down, even if we allow key repeat
+      if (this.keysDown.indexOf(key) < 0) {
+        this.keysDown = [...this.keysDown, ...keysDown]
+      }
 
       // create an interval to check the duration every 100ms
       this.resetTimer()
