@@ -173,9 +173,9 @@ application where you want to start listening on keyboard shortcuts.
 | **Prop**              | **Type** | **Default** | **Description**                                                                                                                                                                                                          |
 | ------------------    | -------- | ----------- | -----------------------------------------------------------------                                                                                                                                                        |
 | **ignoreKeys**        | string[] | []          | Array of keys to ignore (e.g. ['shift', 'ctrl'])                                                                                                                                                                         |
-| **allowRepeatedKeys** | string[] | []          | Array of keys to allow key repeat (e.g. ["h", "j", "k", "l"]), which will repeatedly execute the shortcut bound to them (if the key is held down). This will not affect the shortcut's provided holdDuration (if any)    |
 | **ignoreTagNames**    | string[] | ['input']   | Array of tagNames to ignore (e.g. ['input', 'article'])                                                                                                                                                                  |
 | **preventDefault**    | boolean  | true        | Call `preventDefault()` automatically when a shortcut is executed                                                                                                                                                        |
+| **allowRepeatedKeys** | string[] | []          | Array of keys to allow key repeat (e.g. ['h', 'j', 'k', 'l']), which will repeatedly execute the shortcut bound to them (if the key is held down). This will not affect the shortcut's provided `holdDuration` (if any)  |
 
 ### `withShortcut(React.ReactNode)`
 
